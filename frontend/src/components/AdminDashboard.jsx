@@ -147,13 +147,6 @@ export default function AdminDashboard() {
           <PanelReportes onDatosActualizados={cargarDatos} />
         )}
 
-        {vista === "resumen" && error && (
-          <div className="alert alert-error" role="alert">
-            <span className="alert-icon">!</span>
-            <span>{error}</span>
-          </div>
-        )}
-
         {vista === "resumen" &&
           (cargando && !resumen ? (
             <SkeletonTarjetas />

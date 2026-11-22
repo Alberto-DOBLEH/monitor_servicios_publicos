@@ -164,12 +164,6 @@ export default function MapaPublico() {
         </div>
       </header>
 
-      {error && (
-        <div className="publico-error" role="alert">
-          {error}
-        </div>
-      )}
-
       <section className="publico-layout">
         <aside className="publico-sidebar">
           <div className="publico-filtros">

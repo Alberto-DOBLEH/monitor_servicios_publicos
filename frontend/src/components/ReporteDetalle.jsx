@@ -57,6 +57,11 @@ export default function ReporteDetalle({
       return;
     }
 
+    if (estado === "RECHAZADO" && comentario.trim().length < 5) {
+      notificar("Agrega el motivo del rechazo (al menos 5 caracteres).", "error");
+      return;
+    }
+
     if ((estado === "RECHAZADO" || estado === "ARCHIVADO") && !confirmacion) {
       setConfirmacion(true);
       return;
@@ -220,7 +225,6 @@ export default function ReporteDetalle({
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Describe qué se hizo o el motivo del cambio"
-                required={estado === "RECHAZADO"}
               />
             </label>
 

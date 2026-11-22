@@ -816,6 +816,7 @@ tbody tr:hover {
 }
 
 .tab {
+  min-height: 40px;
   padding: 9px 18px;
   border: 0;
   border-radius: 9px;
@@ -2048,6 +2049,8 @@ textarea {
 .toast-mensaje { flex: 1; line-height: 1.45; }
 
 .toast-cerrar {
+  min-width: 32px;
+  min-height: 32px;
   border: 0;
   background: transparent;
   color: var(--muted);
@@ -2242,4 +2245,25 @@ textarea {
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+
+/* Correcciones de contraste en modo oscuro (auditoría visual). */
+:root[data-tema="oscuro"] .topbar,
+:root[data-tema="oscuro"] .mapa-leyenda,
+:root[data-tema="oscuro"] .detalle-head,
+:root[data-tema="oscuro"] .publico-seleccion {
+  background: var(--surface);
+}
+
+:root[data-tema="oscuro"] .mapa-leyenda {
+  color: var(--muted);
+}
+
+:root[data-tema="oscuro"] .dashboard .eyebrow {
+  color: #5eead4;
+}
+
+:root[data-tema="oscuro"] .user-avatar {
+  color: #ccfbf1;
 }
