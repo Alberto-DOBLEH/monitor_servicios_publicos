@@ -1,0 +1,20 @@
+services:
+  db:
+    image: docker.io/library/mariadb:11
+    container_name: monitor_servicios_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: monitor_servicios_publicos
+    ports:
+      - "3307:3306"
+    volumes:
+      - monitor_servicios_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  monitor_servicios_db_data:
