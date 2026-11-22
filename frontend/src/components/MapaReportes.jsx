@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.css";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css";
 
 const SIMBOLOS_ESTADO = {
   PENDIENTE: "!",
@@ -20,6 +23,14 @@ const crearIcono = (color, estado, seleccionado) =>
     iconSize: [32, 32],
     iconAnchor: [16, 30],
     popupAnchor: [0, -28],
+  });
+
+const crearIconoCluster = (cluster) =>
+  L.divIcon({
+    className: "cluster-leaflet",
+    html: `<div class="cluster-punto"><span>${cluster.getChildCount()}</span></div>`,
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
   });
 
 /** Mantiene el mapa dentro de Los Mochis y enfoca el reporte seleccionado. */
@@ -55,11 +66,37 @@ export default function MapaReportes({
   reportes,
   seleccionado,
   onSeleccionar,
+  agrupar = false,
 }) {
   const centro = useMemo(
     () => [geo?.centro?.lat ?? 25.7904, geo?.centro?.lng ?? -108.9858],
     [geo],
   );
+
+  const marcadores = reportes.map((reporte) => (
+    <Marker
+      key={reporte.id_reporte}
+      position={[Number(reporte.latitud), Number(reporte.longitud)]}
+      icon={crearIcono(
+        reporte.categoria?.color,
+        reporte.estado,
+        seleccionado?.id_reporte === reporte.id_reporte,
+      )}
+      eventHandlers={{
+        click: () => onSeleccionar(reporte),
+      }}
+    >
+      <Popup>
+        <div className="popup-reporte">
+          <strong>{reporte.folio}</strong>
+          <span>{reporte.titulo}</span>
+          <small>
+            {reporte.categoria?.nombre} · {reporte.estado.replaceAll("_", " ")}
+          </small>
+        </div>
+      </Popup>
+    </Marker>
+  ));
 
   if (!geo) {
     return (
@@ -88,28 +125,19 @@ export default function MapaReportes({
 
         <AjustarVista geo={geo} seleccionado={seleccionado} />
 
-        {reportes.map((reporte) => (
-          <Marker
-            key={reporte.id_reporte}
-            position={[Number(reporte.latitud), Number(reporte.longitud)]}
-            icon={crearIcono(
-              reporte.categoria?.color,
-              reporte.estado,
-              seleccionado?.id_reporte === reporte.id_reporte,
-            )}
-            eventHandlers={{ click: () => onSeleccionar(reporte) }}
+        {agrupar ? (
+          <MarkerClusterGroup
+            chunkedLoading
+            showCoverageOnHover={false}
+            spiderfyOnMaxZoom
+            maxClusterRadius={55}
+            iconCreateFunction={crearIconoCluster}
           >
-            <Popup>
-              <div className="popup-reporte">
-                <strong>{reporte.folio}</strong>
-                <span>{reporte.titulo}</span>
-                <small>
-                  {reporte.categoria?.nombre} · {reporte.estado.replaceAll("_", " ")}
-                </small>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+            {marcadores}
+          </MarkerClusterGroup>
+        ) : (
+          marcadores
+        )}
       </MapContainer>
 
       <div className="mapa-leyenda">

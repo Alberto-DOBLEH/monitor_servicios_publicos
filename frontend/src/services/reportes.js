@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config";
 import { apiFetch } from "./api";
 
 const construirQuery = (filtros = {}) => {
@@ -42,3 +43,40 @@ export const cambiarEstadoReporte = (id, datos, token) =>
 /** Métricas del panel. */
 export const obtenerEstadisticas = (token) =>
   apiFetch("/api/reportes/estadisticas", { token });
+
+/** Descarga el CSV filtrado (solo ADMIN). */
+export async function exportarCSV(token, filtros = {}) {
+  const respuesta = await fetch(
+    `${API_BASE_URL}/api/reportes/admin/exportar${construirQuery(filtros)}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+
+  if (!respuesta.ok) {
+    let mensaje = "No se pudo exportar el CSV";
+    try {
+      const datos = await respuesta.json();
+      mensaje = datos.error || mensaje;
+    } catch {
+      // Cuerpo no JSON.
+    }
+    const error = new Error(mensaje);
+    error.status = respuesta.status;
+    throw error;
+  }
+
+  const blob = await respuesta.blob();
+  const disposition = respuesta.headers.get("Content-Disposition") || "";
+  const coincidencia = disposition.match(/filename="?([^";]+)"?/i);
+  const nombre = coincidencia
+    ? coincidencia[1]
+    : `reportes-servicios-${new Date().toISOString().slice(0, 10)}.csv`;
+
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombre;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+}

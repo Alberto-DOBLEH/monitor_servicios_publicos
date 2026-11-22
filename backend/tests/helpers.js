@@ -13,12 +13,13 @@ let fallidos = 0;
 const errores = [];
 
 async function responder(respuesta) {
+  const texto = await respuesta.text();
   let cuerpo;
 
   try {
-    cuerpo = await respuesta.json();
+    cuerpo = JSON.parse(texto);
   } catch {
-    cuerpo = await respuesta.text();
+    cuerpo = texto;
   }
 
   return { status: respuesta.status, cuerpo, headers: respuesta.headers };

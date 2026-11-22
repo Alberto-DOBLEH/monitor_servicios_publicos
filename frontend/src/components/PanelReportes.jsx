@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
+  exportarCSV,
   obtenerCategorias,
   obtenerGeo,
   obtenerReporte,
@@ -49,8 +50,12 @@ export default function PanelReportes({ onDatosActualizados }) {
     estado: "",
     categoria_id: "",
     buscar: "",
+    fecha_desde: "",
+    fecha_hasta: "",
   });
   const [cargando, setCargando] = useState(true);
+  const [exportando, setExportando] = useState(false);
+  const [agrupar, setAgrupar] = useState(true);
   const [error, setError] = useState("");
   const [idSeleccionado, setIdSeleccionado] = useState(null);
   const [detalle, setDetalle] = useState(null);
@@ -144,6 +149,23 @@ export default function PanelReportes({ onDatosActualizados }) {
   const actualizarFiltro = (clave, valor) =>
     setFiltros((anteriores) => ({ ...anteriores, [clave]: valor }));
 
+  const manejarExportar = async () => {
+    setExportando(true);
+    setError("");
+
+    try {
+      await exportarCSV(token, filtros);
+    } catch (err) {
+      if (err.status === 401 || err.status === 403) {
+        logout();
+        return;
+      }
+      setError(err.message || "No se pudo exportar el CSV");
+    } finally {
+      setExportando(false);
+    }
+  };
+
   return (
     <section className="panel reportes-panel">
       <div className="panel-head reportes-head">
@@ -199,14 +221,50 @@ export default function PanelReportes({ onDatosActualizados }) {
           />
         </label>
 
-        <button
-          type="button"
-          className="btn btn-secondary btn-filtrar"
-          onClick={cargarReportes}
-          disabled={cargando}
-        >
-          {cargando ? "Cargando..." : "Actualizar"}
-        </button>
+        <label className="filtro-campo">
+          <span>Desde</span>
+          <input
+            type="date"
+            value={filtros.fecha_desde}
+            onChange={(e) => actualizarFiltro("fecha_desde", e.target.value)}
+          />
+        </label>
+
+        <label className="filtro-campo">
+          <span>Hasta</span>
+          <input
+            type="date"
+            value={filtros.fecha_hasta}
+            onChange={(e) => actualizarFiltro("fecha_hasta", e.target.value)}
+          />
+        </label>
+
+        <div className="filtros-acciones">
+          <button
+            type="button"
+            className={agrupar ? "btn btn-secondary btn-activo" : "btn btn-secondary"}
+            onClick={() => setAgrupar((valor) => !valor)}
+            title="Agrupar marcadores cercanos"
+          >
+            {agrupar ? "Puntos agrupados" : "Puntos individuales"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={cargarReportes}
+            disabled={cargando}
+          >
+            {cargando ? "Cargando..." : "Actualizar"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={manejarExportar}
+            disabled={exportando || total === 0}
+          >
+            {exportando ? "Exportando..." : "Exportar CSV"}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -289,6 +347,7 @@ export default function PanelReportes({ onDatosActualizados }) {
             reportes={reportes}
             seleccionado={reporteSeleccionado}
             onSeleccionar={seleccionar}
+            agrupar={agrupar}
           />
         </div>
       </div>

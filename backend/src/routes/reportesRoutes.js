@@ -5,6 +5,7 @@ const {
   listarReportes,
   misReportes,
   listarTodosAdmin,
+  exportarCSV,
   obtenerReporte,
   historialReporte,
   cambiarEstado,
@@ -70,6 +71,12 @@ router.get(
   estadisticas,
 );
 
+router.get(
+  "/admin/exportar",
+  verificarToken,
+  requiereRol("ADMIN"),
+  exportarCSV,
+);
 
 router.post(
   "/",

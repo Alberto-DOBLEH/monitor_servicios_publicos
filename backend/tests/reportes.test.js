@@ -505,6 +505,61 @@ async function testReportes() {
   }
 
   {
+    const { status } = await hacerRequest("/reportes/admin/exportar", {
+      headers: { Authorization: `Bearer ${tokenCiudadano1}` },
+    });
+    assertEqual(status, 403, "Ciudadano no puede exportar el CSV");
+  }
+
+  {
+    const { status, cuerpo, headers } = await hacerRequest(
+      "/reportes/admin/exportar",
+      { headers: { Authorization: `Bearer ${tokenAdmin}` } },
+    );
+    const texto = String(cuerpo || "");
+    const lineas = texto.split("\r\n");
+
+    assertEqual(status, 200, "Admin exporta el CSV");
+    assert(
+      String(headers.get("content-type") || "").includes("text/csv"),
+      "La respuesta usa content-type text/csv",
+    );
+    assert(
+      String(headers.get("content-disposition") || "").includes("attachment"),
+      "La respuesta fuerza la descarga",
+    );
+    assert(
+      texto.startsWith("Folio") &&
+        String(headers.get("content-type") || "").includes("utf-8"),
+      "El CSV usa UTF-8 y empieza por la cabecera",
+    );
+    assert(texto.includes("SP-2026-0001"), "El CSV contiene los folios");
+    assert(
+      !texto.includes("GMT") && /\d{2}\/\d{2}\/\d{4}/.test(texto),
+      "Las fechas del CSV usan formato local legible",
+    );
+    assertEqual(lineas.length, 20, "El CSV incluye 19 reportes más la cabecera");
+  }
+
+  {
+    const { status, cuerpo } = await hacerRequest(
+      "/reportes/admin/exportar?estado=PENDIENTE",
+      { headers: { Authorization: `Bearer ${tokenAdmin}` } },
+    );
+    const lineas = String(cuerpo || "").split("\r\n");
+
+    assertEqual(status, 200, "El CSV acepta filtros");
+    assert(
+      lineas.length > 1 && lineas.length < 20,
+      "El filtro reduce las filas exportadas",
+    );
+    assert(
+      lineas.slice(1).every((linea) => linea.includes("PENDIENTE")),
+      "Todas las filas exportadas respetan el filtro",
+    );
+  }
+
+  {
     const { status, cuerpo } = await hacerRequest("/reportes/estadisticas", {
       headers: { Authorization: `Bearer ${tokenAdmin}` },
     });

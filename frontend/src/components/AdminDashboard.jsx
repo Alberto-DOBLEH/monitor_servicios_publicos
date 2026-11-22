@@ -253,22 +253,23 @@ export default function AdminDashboard() {
               </div>
               <div className="phase-grid">
                 <div>
-                  <h3>Listo en Fases 1 y 2</h3>
+                  <h3>Listo en Fases 1 a 3</h3>
                   <ul>
                     <li>Usuarios, roles JWT y control de cuentas.</li>
                     <li>Catálogo de 9 servicios públicos.</li>
                     <li>Reportes geolocalizados en Los Mochis.</li>
-                    <li>Evidencias fotográficas e historial de estados.</li>
-                    <li>Mapa y gestión de reportes en el panel.</li>
+                    <li>Evidencias e historial de estados.</li>
+                    <li>App Flutter ciudadana con GPS, fotos y seguimiento.</li>
                   </ul>
                 </div>
                 <div>
-                  <h3>Siguiente: Fase 3</h3>
+                  <h3>Novedades de la Fase 4</h3>
                   <ul>
-                    <li>App Flutter para ciudadanos (Android/APK).</li>
-                    <li>Wizard de reporte con GPS automático.</li>
-                    <li>Cámara y galería para evidencias.</li>
-                    <li>“Mis reportes” y seguimiento en la app.</li>
+                    <li>Mapa público con descarga del APK.</li>
+                    <li>Agrupación de marcadores en el panel.</li>
+                    <li>Filtro por rango de fechas.</li>
+                    <li>Exportación de reportes a CSV.</li>
+                    <li>Pruebas de integración y despliegue.</li>
                   </ul>
                 </div>
               </div>
@@ -278,7 +279,7 @@ export default function AdminDashboard() {
       </main>
 
       <footer className="dashboard-footer">
-        Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 2
+        Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 4
       </footer>
     </div>
   );

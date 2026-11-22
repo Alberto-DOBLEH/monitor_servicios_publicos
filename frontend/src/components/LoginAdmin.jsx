@@ -50,8 +50,8 @@ export default function LoginAdmin() {
         </div>
 
         <div className="brand-footer">
-          <span>Fase 1</span>
-          <span>Autenticación y roles</span>
+          <span>Fase 4</span>
+          <span>Mapa público, CSV y seguimiento</span>
         </div>
       </section>
 
@@ -125,10 +125,13 @@ export default function LoginAdmin() {
             </p>
           </div>
 
+          <a className="login-public-link" href="#/mapa-publico">
+            Ver mapa público de reportes →
+          </a>
         </div>
 
         <p className="legal-note">
-          Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 1
+          Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 4
         </p>
       </section>
     </main>

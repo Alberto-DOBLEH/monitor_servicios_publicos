@@ -251,3 +251,6 @@ mobile/.gradle/
 mobile/android/.gradle/
 mobile/android/local.properties
 mobile/android/*.iml
+
+# APK generado en local (se envia a revision por separado)
+backend/downloads/*.apk

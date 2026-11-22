@@ -369,41 +369,59 @@ const misReportes = async (req, res) => {
   }
 };
 
+/** Construye los filtros compartidos por el listado y la exportación admin. */
+const construirFiltrosAdmin = (req) => {
+  const condiciones = ["1 = 1"];
+  const parametros = [];
+
+  if (req.query.estado) {
+    condiciones.push("r.estado = ?");
+    parametros.push(req.query.estado);
+  }
+
+  if (req.query.categoria_id) {
+    condiciones.push("r.id_categoria = ?");
+    parametros.push(req.query.categoria_id);
+  }
+
+  if (req.query.id_usuario) {
+    condiciones.push("r.id_usuario = ?");
+    parametros.push(req.query.id_usuario);
+  }
+
+  if (req.query.prioridad) {
+    condiciones.push("r.prioridad = ?");
+    parametros.push(req.query.prioridad);
+  }
+
+  if (req.query.buscar) {
+    const termino = `%${String(req.query.buscar).trim()}%`;
+    condiciones.push("(r.folio LIKE ? OR r.titulo LIKE ?)");
+    parametros.push(termino, termino);
+  }
+
+  const fechaValida = (valor) =>
+    typeof valor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(valor);
+
+  if (fechaValida(req.query.fecha_desde)) {
+    condiciones.push("DATE(r.fecha_registro) >= ?");
+    parametros.push(req.query.fecha_desde);
+  }
+
+  if (fechaValida(req.query.fecha_hasta)) {
+    condiciones.push("DATE(r.fecha_registro) <= ?");
+    parametros.push(req.query.fecha_hasta);
+  }
+
+  return { where: `WHERE ${condiciones.join(" AND ")}`, parametros };
+};
+
 /** GET /api/reportes/admin/todos — listado completo con filtros, solo ADMIN. */
 const listarTodosAdmin = async (req, res) => {
   try {
     const limite = Math.min(Number(req.query.limite) || 50, 200);
     const offset = Math.max(Number(req.query.offset) || 0, 0);
-    const condiciones = ["1 = 1"];
-    const parametros = [];
-
-    if (req.query.estado) {
-      condiciones.push("r.estado = ?");
-      parametros.push(req.query.estado);
-    }
-
-    if (req.query.categoria_id) {
-      condiciones.push("r.id_categoria = ?");
-      parametros.push(req.query.categoria_id);
-    }
-
-    if (req.query.id_usuario) {
-      condiciones.push("r.id_usuario = ?");
-      parametros.push(req.query.id_usuario);
-    }
-
-    if (req.query.prioridad) {
-      condiciones.push("r.prioridad = ?");
-      parametros.push(req.query.prioridad);
-    }
-
-    if (req.query.buscar) {
-      const termino = `%${String(req.query.buscar).trim()}%`;
-      condiciones.push("(r.folio LIKE ? OR r.titulo LIKE ?)");
-      parametros.push(termino, termino);
-    }
-
-    const where = `WHERE ${condiciones.join(" AND ")}`;
+    const { where, parametros } = construirFiltrosAdmin(req);
 
     const [[conteo], [filas]] = await Promise.all([
       pool.query(`SELECT COUNT(*) AS total ${JOINES_REPORTE} ${where}`, parametros),
@@ -431,6 +449,90 @@ const listarTodosAdmin = async (req, res) => {
   } catch (error) {
     console.error("[REPORTES] Error en listado admin:", error);
     return res.status(500).json({ error: "No se pudieron obtener los reportes" });
+  }
+};
+
+/** GET /api/reportes/admin/exportar — CSV de reportes filtrados, solo ADMIN. */
+const exportarCSV = async (req, res) => {
+  const escapar = (valor) => {
+    if (valor === null || valor === undefined) return "";
+    const texto = String(valor).replace(/\r?\n/g, " ");
+    return /[",;]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+  };
+
+  const formatearFecha = (valor) => {
+    if (!valor) return "";
+    const fecha = valor instanceof Date ? valor : new Date(valor);
+    if (Number.isNaN(fecha.getTime())) return String(valor);
+    return new Intl.DateTimeFormat("es-MX", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(fecha);
+  };
+
+  try {
+    const { where, parametros } = construirFiltrosAdmin(req);
+
+    const [filas] = await pool.query(
+      `SELECT ${COLUMNAS_REPORTE} ${JOINES_REPORTE} ${where}
+       ORDER BY r.fecha_registro DESC
+       LIMIT 10000`,
+      parametros,
+    );
+
+    const cabeceras = [
+      "Folio",
+      "Titulo",
+      "Servicio",
+      "Estado",
+      "Prioridad",
+      "Fecha registro",
+      "Fecha cierre",
+      "Latitud",
+      "Longitud",
+      "Direccion",
+      "Ciudadano",
+      "Motivo rechazo",
+    ];
+
+    const lineas = [cabeceras.map(escapar).join(",")];
+
+    filas.forEach((fila) => {
+      lineas.push(
+        [
+          fila.folio,
+          fila.titulo,
+          fila.categoria_nombre,
+          fila.estado,
+          fila.prioridad,
+          formatearFecha(fila.fecha_registro),
+          formatearFecha(fila.fecha_cierre),
+          fila.latitud,
+          fila.longitud,
+          fila.direccion_referencia,
+          fila.usuario_nombre,
+          fila.motivo_rechazo,
+        ]
+          .map(escapar)
+          .join(","),
+      );
+    });
+
+    const fecha = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="reportes-servicios-${fecha}.csv"`,
+    );
+
+    return res.send(`\uFEFF${lineas.join("\r\n")}`);
+  } catch (error) {
+    console.error("[REPORTES] Error exportando CSV:", error);
+    return res.status(500).json({ error: "No se pudo exportar el CSV" });
   }
 };
 
@@ -681,6 +783,7 @@ module.exports = {
   listarReportes,
   misReportes,
   listarTodosAdmin,
+  exportarCSV,
   obtenerReporte,
   historialReporte,
   cambiarEstado,

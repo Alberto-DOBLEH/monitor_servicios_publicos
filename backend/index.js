@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -66,13 +67,23 @@ app.use(
   }),
 );
 
+// APK de la app ciudadana, disponible desde el mapa público.
+app.use(
+  "/downloads",
+  express.static(path.join(__dirname, "downloads"), {
+    fallthrough: true,
+    index: false,
+    dotfiles: "deny",
+  }),
+);
+
 app.use(limiteGlobal);
 
 app.get("/", (req, res) => {
   res.json({
     mensaje: "API de Monitoreo de Servicios Públicos - Los Mochis",
     version: "1.0.0",
-    fase: "Fase 2 - Reportes y seguimiento",
+    fase: "Fase 4 - Panel administrativo y mapa público",
     health: "/health",
   });
 });
