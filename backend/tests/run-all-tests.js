@@ -32,6 +32,7 @@ const {
   AMARILLO,
 } = require("./helpers");
 const testAuth = require("./auth.test");
+const testReportes = require("./reportes.test");
 
 const esperar = (ms) => new Promise((resolver) => setTimeout(resolver, ms));
 
@@ -120,6 +121,7 @@ async function ejecutarTodos() {
 
   try {
     await testAuth();
+    await testReportes();
   } catch (error) {
     console.log(`\n${ROJO}${BOLD}[ERR] Error fatal durante los tests:${RESET}`);
     console.log(`${ROJO}   ${error.message}${RESET}`);

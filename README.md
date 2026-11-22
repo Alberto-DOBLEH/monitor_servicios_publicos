@@ -1,10 +1,8 @@
 # Monitoreo de Servicios Públicos — Los Mochis, Sinaloa
 
-## Fase 1 — Base de datos, autenticación y roles
+## Fases 1 y 2 — Autenticación, roles y reportes
 
-Sistema de reporte ciudadano y seguimiento administrativo de servicios públicos.
-
-- **Web administrador:** React + Vite.
+- **Web administrador:** React + Vite + Leaflet.
 - **API:** Node.js + Express.
 - **Base de datos:** MySQL / MariaDB.
 
@@ -16,20 +14,28 @@ cd backend && cp .env.example .env && npm install && npm run db:setup && npm run
 cd ../frontend && npm install && npm run dev
 ```
 
+### Funcionalidad de la Fase 2
+
+- Catálogo de 9 categorías de servicios públicos.
+- Alta de reportes con GPS validado contra Los Mochis.
+- Evidencias fotográficas (JPEG/PNG/WebP, máximo 3 de 5 MB).
+- “Mis reportes” con aislamiento por ciudadano.
+- Detalle con fotos, coordenadas e historial de estados.
+- Cambio de estado administrado con transiciones permitidas.
+- Mapa Leaflet con puntos exactos y filtros en el panel.
+- Estadísticas por estado, categoría, prioridad y sector.
+
 ### Credenciales de prueba
 
 | Rol | Correo | Contraseña |
 |---|---|---|
 | ADMIN | `admin@servicios.test` | `Admin123!` |
 | CIUDADANO | `ciudadano1@servicios.test` | `Ciudadano123!` |
-
-La web solo permite `ADMIN`. El registro público crea siempre `CIUDADANO`.
+| CIUDADANO | `ciudadano2@servicios.test` | `Ciudadano123!` |
 
 ### Verificación
 
 ```bash
-cd backend && npm test
+cd backend && npm test    # 122 pruebas, 0 fallos
+cd ../frontend && npm run build
 ```
-
-Incluye login, roles, registro, perfil, contraseña, activación de usuarios y
-alcance geográfico de Los Mochis.

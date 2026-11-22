@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../services/api";
+import PanelReportes from "./PanelReportes";
 
 const ESTADOS = [
   { id: "PENDIENTE", label: "Pendientes", className: "status-pending" },
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [vista, setVista] = useState("resumen");
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
@@ -102,22 +104,50 @@ export default function AdminDashboard() {
         <div className="page-heading">
           <div>
             <p className="eyebrow">Panel administrativo</p>
-            <h1>Resumen general</h1>
-            <p>Usuarios, estados y cobertura del sistema.</p>
+            <h1>{vista === "resumen" ? "Resumen general" : "Gestión de reportes"}</h1>
+            <p>
+              {vista === "resumen"
+                ? "Usuarios, estados y cobertura del sistema."
+                : "Mapa, evidencias y seguimiento de los reportes ciudadanos."}
+            </p>
           </div>
-          <button type="button" className="btn btn-secondary" onClick={cargarDatos} disabled={cargando}>
+          {vista === "resumen" && (
+            <button type="button" className="btn btn-secondary" onClick={cargarDatos} disabled={cargando}>
               {cargando ? "Actualizando..." : "Actualizar datos"}
-          </button>
+            </button>
+          )}
         </div>
 
-        {error && (
+        <nav className="tabs" aria-label="Secciones del panel">
+          <button
+            type="button"
+            className={vista === "resumen" ? "tab tab-activa" : "tab"}
+            onClick={() => setVista("resumen")}
+          >
+            Resumen
+          </button>
+          <button
+            type="button"
+            className={vista === "reportes" ? "tab tab-activa" : "tab"}
+            onClick={() => setVista("reportes")}
+          >
+            Reportes
+          </button>
+        </nav>
+
+        {vista === "reportes" && (
+          <PanelReportes onDatosActualizados={cargarDatos} />
+        )}
+
+        {vista === "resumen" && error && (
           <div className="alert alert-error" role="alert">
             <span className="alert-icon">!</span>
             <span>{error}</span>
           </div>
         )}
 
-        {cargando && !resumen ? (
+        {vista === "resumen" &&
+          (cargando && !resumen ? (
             <div className="loading-panel">
               <div className="spinner" />
               <span>Cargando información...</span>
@@ -214,12 +244,41 @@ export default function AdminDashboard() {
               </div>
             </section>
 
+            <section className="panel phase-panel">
+              <div className="panel-head">
+                <div>
+                  <h2>Alcance de esta fase</h2>
+                  <p>Lo que ya está listo y lo que sigue en el proyecto.</p>
+                </div>
+              </div>
+              <div className="phase-grid">
+                <div>
+                  <h3>Listo en Fases 1 y 2</h3>
+                  <ul>
+                    <li>Usuarios, roles JWT y control de cuentas.</li>
+                    <li>Catálogo de 9 servicios públicos.</li>
+                    <li>Reportes geolocalizados en Los Mochis.</li>
+                    <li>Evidencias fotográficas e historial de estados.</li>
+                    <li>Mapa y gestión de reportes en el panel.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>Siguiente: Fase 3</h3>
+                  <ul>
+                    <li>App Flutter para ciudadanos (Android/APK).</li>
+                    <li>Wizard de reporte con GPS automático.</li>
+                    <li>Cámara y galería para evidencias.</li>
+                    <li>“Mis reportes” y seguimiento en la app.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
           </>
-        )}
+          ))}
       </main>
 
       <footer className="dashboard-footer">
-        Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 1
+        Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 2
       </footer>
     </div>
   );

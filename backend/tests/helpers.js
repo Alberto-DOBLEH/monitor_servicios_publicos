@@ -34,6 +34,19 @@ async function hacerRequest(ruta, opciones = {}) {
   return responder(respuesta);
 }
 
+/** Petición multipart para probar la subida de evidencias fotográficas. */
+async function hacerFormData(ruta, formData, opciones = {}) {
+  const url = ruta.startsWith("http") ? ruta : `${BASE_URL}${ruta}`;
+  const respuesta = await fetch(url, {
+    ...opciones,
+    method: opciones.method || "POST",
+    body: formData,
+    headers: { ...opciones.headers },
+  });
+
+  return responder(respuesta);
+}
+
 function assert(condicion, mensaje) {
   totalTests++;
   if (condicion) {
@@ -90,6 +103,7 @@ async function login(correo, password) {
 module.exports = {
   BASE_URL,
   hacerRequest,
+  hacerFormData,
   assert,
   assertEqual,
   seccion,

@@ -10,6 +10,12 @@ validateEnv();
 const authRoutes = require("./src/routes/authRoutes");
 const adminRoutes = require("./src/routes/adminRoutes");
 const publicRoutes = require("./src/routes/publicRoutes");
+const categoriasRoutes = require("./src/routes/categoriasRoutes");
+const reportesRoutes = require("./src/routes/reportesRoutes");
+const {
+  DIRECTORIO_UPLOADS,
+  URL_PUBLICA,
+} = require("./src/config/uploads");
 const { limiteGlobal } = require("./src/middleware/rateLimiter");
 const errorHandler = require("./src/middleware/errorHandler");
 const pool = require("./src/config/db");
@@ -49,13 +55,24 @@ app.use(
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 
+// Evidencias fotográficas almacenadas localmente en desarrollo.
+app.use(
+  URL_PUBLICA,
+  express.static(DIRECTORIO_UPLOADS, {
+    fallthrough: true,
+    maxAge: "7d",
+    index: false,
+    dotfiles: "deny",
+  }),
+);
+
 app.use(limiteGlobal);
 
 app.get("/", (req, res) => {
   res.json({
     mensaje: "API de Monitoreo de Servicios Públicos - Los Mochis",
     version: "1.0.0",
-    fase: "Fase 1 - Autenticación y roles",
+    fase: "Fase 2 - Reportes y seguimiento",
     health: "/health",
   });
 });
@@ -76,6 +93,8 @@ app.get("/health", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/categorias", categoriasRoutes);
+app.use("/api/reportes", reportesRoutes);
 app.use("/api", publicRoutes);
 
 app.use((req, res) => {
