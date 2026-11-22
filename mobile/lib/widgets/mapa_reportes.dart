@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../config/app_config.dart';
 import '../models/reporte.dart';
 import '../theme/app_theme.dart';
+import '../widgets/common.dart';
 
 class MapaReportes extends StatefulWidget {
   final List<Reporte> reportes;
@@ -46,7 +47,8 @@ class _MapaReportesState extends State<MapaReportes> {
     super.didUpdateWidget(oldWidget);
 
     final objetivo = widget.seleccionado;
-    if (objetivo != null && objetivo.idReporte != oldWidget.seleccionado?.idReporte) {
+    if (objetivo != null &&
+        objetivo.idReporte != oldWidget.seleccionado?.idReporte) {
       _controlador.move(
         LatLng(objetivo.latitud, objetivo.longitud),
         AppConfig.zoomMaximo - 1,
@@ -74,12 +76,9 @@ class _MapaReportesState extends State<MapaReportes> {
                     )) {
                       widget.onTapped?.call(punto);
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Selecciona un punto dentro de Los Mochis',
-                          ),
-                        ),
+                      mensajeError(
+                        context,
+                        'Selecciona un punto dentro de Los Mochis',
                       );
                     }
                   }

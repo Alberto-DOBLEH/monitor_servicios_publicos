@@ -30,14 +30,14 @@ class Usuario {
   }
 
   Map<String, dynamic> toJson() => {
-        'id_usuario': idUsuario,
-        'nombre': nombre,
-        'correo': correo,
-        'telefono': telefono,
-        'rol': rol,
-        'activo': activo,
-        'fecha_registro': fechaRegistro?.toIso8601String(),
-      };
+    'id_usuario': idUsuario,
+    'nombre': nombre,
+    'correo': correo,
+    'telefono': telefono,
+    'rol': rol,
+    'activo': activo,
+    'fecha_registro': fechaRegistro?.toIso8601String(),
+  };
 
   bool get esCiudadano => rol == 'CIUDADANO';
 

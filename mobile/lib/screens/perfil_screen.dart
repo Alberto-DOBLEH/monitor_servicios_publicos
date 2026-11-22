@@ -55,11 +55,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     });
 
     try {
-      await ApiService.put(
-        '/api/auth/perfil',
-        {'nombre': _nombre.text.trim(), 'telefono': _telefono.text.trim()},
-        token: token,
-      );
+      await ApiService.put('/api/auth/perfil', {
+        'nombre': _nombre.text.trim(),
+        'telefono': _telefono.text.trim(),
+      }, token: token);
       setState(() => _mensaje = 'Datos actualizados correctamente');
     } on ApiException catch (error) {
       setState(() => _error = error.message);
@@ -86,14 +85,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     });
 
     try {
-      await ApiService.put(
-        '/api/auth/password',
-        {
-          'password_actual': _passwordActual.text,
-          'password_nueva': _passwordNueva.text,
-        },
-        token: token,
-      );
+      await ApiService.put('/api/auth/password', {
+        'password_actual': _passwordActual.text,
+        'password_nueva': _passwordNueva.text,
+      }, token: token);
       _passwordActual.clear();
       _passwordNueva.clear();
       setState(() => _mensaje = 'Contraseña actualizada');
@@ -194,7 +189,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       labelText: 'Nombre completo',
                       prefixIcon: Icon(Icons.badge_outlined),
                     ),
-                    validator: (valor) => valor == null || valor.trim().length < 3
+                    validator: (valor) =>
+                        valor == null || valor.trim().length < 3
                         ? 'Ingresa tu nombre'
                         : null,
                   ),

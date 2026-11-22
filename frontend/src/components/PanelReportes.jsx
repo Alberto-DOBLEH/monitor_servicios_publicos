@@ -9,6 +9,9 @@ import {
 } from "../services/reportes";
 import MapaReportes from "./MapaReportes";
 import ReporteDetalle from "./ReporteDetalle";
+import EstadoVacio from "./EstadoVacio";
+import { SkeletonDetalle, SkeletonTabla } from "./Skeleton";
+import { useToast } from "./Toast";
 
 const ESTADOS = [
   ["", "Todos los estados"],
@@ -41,6 +44,7 @@ const formatearFecha = (valor) => {
 
 export default function PanelReportes({ onDatosActualizados }) {
   const { token, logout } = useAuth();
+  const { notificar } = useToast();
 
   const [geo, setGeo] = useState(null);
   const [categorias, setCategorias] = useState([]);
@@ -56,7 +60,6 @@ export default function PanelReportes({ onDatosActualizados }) {
   const [cargando, setCargando] = useState(true);
   const [exportando, setExportando] = useState(false);
   const [agrupar, setAgrupar] = useState(true);
-  const [error, setError] = useState("");
   const [idSeleccionado, setIdSeleccionado] = useState(null);
   const [detalle, setDetalle] = useState(null);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
@@ -70,13 +73,12 @@ export default function PanelReportes({ onDatosActualizados }) {
       setGeo(datosGeo);
       setCategorias(datosCategorias.categorias || []);
     } catch (err) {
-      setError(err.message || "No se pudieron cargar los catálogos");
+      notificar(err.message || "No se pudieron cargar los catálogos", "error");
     }
   }, []);
 
   const cargarReportes = useCallback(async () => {
     setCargando(true);
-    setError("");
 
     try {
       const datos = await obtenerReportesAdmin(token, {
@@ -90,7 +92,7 @@ export default function PanelReportes({ onDatosActualizados }) {
         logout();
         return;
       }
-      setError(err.message || "No se pudieron cargar los reportes");
+      notificar(err.message || "No se pudieron cargar los reportes", "error");
     } finally {
       setCargando(false);
     }
@@ -117,7 +119,7 @@ export default function PanelReportes({ onDatosActualizados }) {
           logout();
           return;
         }
-        setError(err.message || "No se pudo cargar el detalle");
+        notificar(err.message || "No se pudo cargar el detalle", "error");
       } finally {
         setCargandoDetalle(false);
       }
@@ -139,6 +141,7 @@ export default function PanelReportes({ onDatosActualizados }) {
     setDetalle({ reporte: datos.reporte, historial: datos.historial });
     await cargarReportes();
     onDatosActualizados?.();
+    notificar("Estado actualizado y registrado en el historial.", "exito");
   };
 
   const reporteSeleccionado = useMemo(
@@ -151,23 +154,23 @@ export default function PanelReportes({ onDatosActualizados }) {
 
   const manejarExportar = async () => {
     setExportando(true);
-    setError("");
 
     try {
       await exportarCSV(token, filtros);
+      notificar("CSV descargado con los filtros actuales.", "exito");
     } catch (err) {
       if (err.status === 401 || err.status === 403) {
         logout();
         return;
       }
-      setError(err.message || "No se pudo exportar el CSV");
+      notificar(err.message || "No se pudo exportar el CSV", "error");
     } finally {
       setExportando(false);
     }
   };
 
   return (
-    <section className="panel reportes-panel">
+    <section className="panel reportes-panel" aria-busy={cargando}>
       <div className="panel-head reportes-head">
         <div>
           <h2>Reportes ciudadanos</h2>
@@ -245,6 +248,7 @@ export default function PanelReportes({ onDatosActualizados }) {
             className={agrupar ? "btn btn-secondary btn-activo" : "btn btn-secondary"}
             onClick={() => setAgrupar((valor) => !valor)}
             title="Agrupar marcadores cercanos"
+            aria-pressed={agrupar}
           >
             {agrupar ? "Puntos agrupados" : "Puntos individuales"}
           </button>
@@ -267,35 +271,26 @@ export default function PanelReportes({ onDatosActualizados }) {
         </div>
       </div>
 
-      {error && (
-        <div className="alert alert-error" role="alert">
-          <span className="alert-icon">!</span>
-          <span>{error}</span>
-        </div>
-      )}
-
       <div className="reportes-layout">
         <div className="reportes-lista">
           {cargando && reportes.length === 0 ? (
-            <div className="loading-panel">
-              <div className="spinner" />
-              <span>Cargando reportes...</span>
-            </div>
+            <SkeletonTabla />
           ) : reportes.length === 0 ? (
-            <div className="estado-vacio">
-              <strong>Sin reportes</strong>
-              <span>No hay reportes que coincidan con los filtros.</span>
-            </div>
+            <EstadoVacio
+              titulo="Sin reportes"
+              descripcion="No hay reportes que coincidan con los filtros."
+              accion={{ etiqueta: "Actualizar", onClick: cargarReportes }}
+            />
           ) : (
             <div className="table-wrap tabla-reportes">
               <table>
                 <thead>
                   <tr>
-                    <th>Folio</th>
-                    <th>Reporte</th>
-                    <th>Servicio</th>
-                    <th>Estado</th>
-                    <th>Fecha</th>
+                    <th scope="col">Folio</th>
+                    <th scope="col">Reporte</th>
+                    <th scope="col">Servicio</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Fecha</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -308,6 +303,13 @@ export default function PanelReportes({ onDatosActualizados }) {
                           : ""
                       }
                       onClick={() => seleccionar(reporte)}
+                      tabIndex={0}
+                      onKeyDown={(evento) => {
+                        if (evento.key === "Enter" || evento.key === " ") {
+                          evento.preventDefault();
+                          seleccionar(reporte);
+                        }
+                      }}
                     >
                       <td className="folio-celda">{reporte.folio}</td>
                       <td>
@@ -365,10 +367,7 @@ export default function PanelReportes({ onDatosActualizados }) {
           ) : (
             <aside className="detalle-drawer">
               <div className="detalle-body">
-                <div className="loading-panel">
-                  <div className="spinner" />
-                  <span>Cargando detalle...</span>
-                </div>
+                <SkeletonDetalle />
               </div>
             </aside>
           )}

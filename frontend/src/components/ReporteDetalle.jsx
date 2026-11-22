@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { cambiarEstadoReporte } from "../services/reportes";
+import { useToast } from "./Toast";
 
 const TRANSICIONES = {
   PENDIENTE: ["EN_PROCESO", "RECHAZADO", "ARCHIVADO"],
@@ -39,7 +40,8 @@ export default function ReporteDetalle({
   const { reporte, historial } = detalle;
   const [estado, setEstado] = useState("");
   const [comentario, setComentario] = useState("");
-  const [error, setError] = useState("");
+  const { notificar } = useToast();
+  const [confirmacion, setConfirmacion] = useState(false);
   const [cargando, setCargando] = useState(false);
 
   const opciones = useMemo(
@@ -49,10 +51,14 @@ export default function ReporteDetalle({
 
   const enviar = async (evento) => {
     evento.preventDefault();
-    setError("");
 
     if (!estado) {
-      setError("Selecciona el nuevo estado");
+      notificar("Selecciona el nuevo estado antes de continuar.", "error");
+      return;
+    }
+
+    if ((estado === "RECHAZADO" || estado === "ARCHIVADO") && !confirmacion) {
+      setConfirmacion(true);
       return;
     }
 
@@ -67,8 +73,9 @@ export default function ReporteDetalle({
       setEstado("");
       setComentario("");
       onEstadoActualizado(datos);
+      notificar("Estado actualizado correctamente.", "exito");
     } catch (err) {
-      setError(err.message || "No se pudo actualizar el estado");
+      notificar(err.message || "No se pudo actualizar el estado", "error");
     } finally {
       setCargando(false);
     }
@@ -188,16 +195,15 @@ export default function ReporteDetalle({
           <form className="cambio-estado" onSubmit={enviar}>
             <h3>Actualizar estado</h3>
 
-            {error && (
-              <div className="alert alert-error" role="alert">
-                <span className="alert-icon">!</span>
-                <span>{error}</span>
-              </div>
-            )}
-
             <label className="field">
               <span>Nuevo estado</span>
-              <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+              <select
+                value={estado}
+                onChange={(e) => {
+                  setEstado(e.target.value);
+                  setConfirmacion(false);
+                }}
+              >
                 <option value="">Seleccionar...</option>
                 {opciones.map((opcion) => (
                   <option key={opcion} value={opcion}>
@@ -218,13 +224,38 @@ export default function ReporteDetalle({
               />
             </label>
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-block"
-              disabled={cargando}
-            >
-              {cargando ? "Guardando..." : "Guardar cambio"}
-            </button>
+            {confirmacion && (
+              <div
+                className="confirm-box"
+                role="alertdialog"
+                aria-label="Confirmar cambio de estado"
+              >
+                <strong>¿Confirmar {ETIQUETAS_ESTADO[estado]}?</strong>
+                <span>El ciudadano verá este cambio en su seguimiento.</span>
+                <div className="confirm-acciones">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setConfirmacion(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn btn-danger" disabled={cargando}>
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!confirmacion && (
+              <button
+                type="submit"
+                className="btn btn-primary btn-block"
+                disabled={cargando}
+              >
+                {cargando ? "Guardando..." : "Guardar cambio"}
+              </button>
+            )}
           </form>
         )}
       </div>

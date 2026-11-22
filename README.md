@@ -7,7 +7,7 @@ Sistema de reporte ciudadano y seguimiento administrativo de servicios públicos
 - **API:** Node.js + Express.
 - **Base de datos:** MySQL / MariaDB (compatible con TiDB).
 
-## Estado actual: Fase 4 completada
+## Estado actual: Fase 5 completada
 
 Fase 1:
 
@@ -45,6 +45,14 @@ Fase 4:
 - Filtro por rango de fechas en el panel administrativo.
 - Exportación CSV con los filtros activos (solo `ADMIN`, BOM para Excel).
 - Suite de integración ampliada y smoke tests de extremo a extremo.
+
+Fase 5:
+
+- Paleta, espaciados y microcopy alineados entre React y Flutter.
+- Toasts accesibles, skeletons y estados vacíos con acción en ambos clientes.
+- Modo claro/oscuro en la web, foco visible y navegación por teclado.
+- Confirmación antes de rechazar o archivar un reporte.
+- Pruebas de componentes UX y verificación responsive en móvil, tablet y escritorio.
 
 ## Estructura
 
@@ -270,11 +278,12 @@ validar el GPS y restringir el mapa.
 
 ## Estado final
 
-Fases 1 a 4 completadas. Quedan como mejoras opcionales (Fases 5-6 del plan):
+Fases 1 a 5 completadas. Queda como mejora opcional la Fase 6 del plan:
 
 - Cloudinary en producción en lugar del almacenamiento local.
+- Despliegue cloud de web, API y base de datos.
 - Pruebas en dispositivo real y distribución del APK.
-- Notificaciones push y panel de analystas (fuera del alcance actual).
+- Notificaciones push y panel de analistas (fuera del alcance actual).
 
 ### Verificación de la Fase 4
 
@@ -287,6 +296,17 @@ Fases 1 a 4 completadas. Quedan como mejoras opcionales (Fases 5-6 del plan):
 | Exportación CSV con token admin | 200, `text/csv`, BOM y fechas `dd/mm/aaaa` |
 | Descarga del APK (tras copiarlo en local) | 206 (rango), `application/vnd.android.package-archive` |
 | `cd mobile && flutter analyze && flutter test` | 0 issues, 1/1 |
+
+### Verificación de la Fase 5
+
+| Comando / prueba | Resultado |
+|---|---|
+| `cd frontend && npm test` | ✅ 4 pruebas de UX (`Toast`, skeletons, estado vacío, tema) |
+| `cd frontend && npm run build` | ✅ compilación sin errores |
+| `cd mobile && flutter analyze` | Sin issues |
+| `cd mobile && flutter test` | ✅ 4/4 (paleta, widgets y splash) |
+| Revisión responsive | Móvil, tablet y escritorio sin desbordes |
+| Accesibilidad | Foco visible, `aria-*`, `role="status"`, `prefers-reduced-motion` |
 
 Para publicar el APK en el mapa público, genéralo en local y cópialo:
 

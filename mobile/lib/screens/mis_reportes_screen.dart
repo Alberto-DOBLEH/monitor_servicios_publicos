@@ -110,7 +110,9 @@ class _MisReportesScreenState extends State<MisReportesScreen> {
                           selectedColor: AppColors.primary,
                           backgroundColor: Colors.white,
                           side: BorderSide(
-                            color: activo ? AppColors.primary : AppColors.border,
+                            color: activo
+                                ? AppColors.primary
+                                : AppColors.border,
                           ),
                           labelStyle: TextStyle(
                             color: activo ? Colors.white : AppColors.muted,
@@ -128,51 +130,21 @@ class _MisReportesScreenState extends State<MisReportesScreen> {
             ),
           ),
           if (_cargando)
-            const SliverFillRemaining(child: Cargando(mensaje: 'Cargando tus reportes...'))
+            const SliverFillRemaining(
+              child: EsqueletoLista(mensaje: 'Cargando tus reportes...'),
+            )
           else if (_error != null)
             SliverFillRemaining(
               child: AvisoError(mensaje: _error!, onReintentar: _cargar),
             )
           else if (_visibles.isEmpty)
             SliverFillRemaining(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.inbox_outlined,
-                        size: 64,
-                        color: AppColors.border,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Sin reportes',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.text,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Cuando envíes un reporte aparecerá aquí con su seguimiento.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.muted, fontSize: 13),
-                      ),
-                      const SizedBox(height: 18),
-                      OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const NuevoReporteScreen(),
-                          ),
-                        ),
-                        icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Crear mi primer reporte'),
-                      ),
-                    ],
-                  ),
+              child: EstadoVacio(
+                titulo: 'Sin reportes',
+                descripcion: 'Cuando envíes un reporte aparecerá aquí con su seguimiento.',
+                etiquetaAccion: 'Crear mi primer reporte',
+                onAccion: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NuevoReporteScreen()),
                 ),
               ),
             )
@@ -226,8 +198,11 @@ class _TarjetaReporte extends StatelessWidget {
                       color: AppColors.primary.withValues(alpha: 0.09),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.lightbulb_outline,
-                        size: 19, color: AppColors.primary),
+                    child: const Icon(
+                      Icons.lightbulb_outline,
+                      size: 19,
+                      color: AppColors.primary,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -255,19 +230,32 @@ class _TarjetaReporte extends StatelessWidget {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.fingerprint, size: 14, color: AppColors.muted),
+                  const Icon(
+                    Icons.fingerprint,
+                    size: 14,
+                    color: AppColors.muted,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     reporte.folio,
-                    style: const TextStyle(fontSize: 11, color: AppColors.muted),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.muted,
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 13, color: AppColors.muted),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 13,
+                    color: AppColors.muted,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     fecha,
-                    style: const TextStyle(fontSize: 11, color: AppColors.muted),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.muted,
+                    ),
                   ),
                 ],
               ),
@@ -275,12 +263,18 @@ class _TarjetaReporte extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.photo_camera_outlined,
-                        size: 14, color: AppColors.muted),
+                    const Icon(
+                      Icons.photo_camera_outlined,
+                      size: 14,
+                      color: AppColors.muted,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${reporte.fotos.length} evidencia(s)',
-                      style: const TextStyle(fontSize: 11, color: AppColors.muted),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.muted,
+                      ),
                     ),
                     const Spacer(),
                     const Text(
@@ -291,8 +285,11 @@ class _TarjetaReporte extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const Icon(Icons.chevron_right,
-                        size: 16, color: AppColors.primary),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                   ],
                 ),
               ],

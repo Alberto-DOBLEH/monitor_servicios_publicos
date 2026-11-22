@@ -6,6 +6,10 @@ import {
   obtenerReportes,
 } from "../services/reportes";
 import MapaReportes from "./MapaReportes";
+import BotonTema from "./BotonTema";
+import EstadoVacio from "./EstadoVacio";
+import { SkeletonTabla } from "./Skeleton";
+import { useToast } from "./Toast";
 
 const ETIQUETAS_ESTADO = {
   PENDIENTE: "Pendiente",
@@ -27,6 +31,7 @@ const formatearFecha = (valor) => {
 };
 
 export default function MapaPublico() {
+  const { notificar } = useToast();
   const [geo, setGeo] = useState(null);
   const [categorias, setCategorias] = useState([]);
   const [reportes, setReportes] = useState([]);
@@ -36,7 +41,6 @@ export default function MapaPublico() {
     buscar: "",
   });
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
 
   useEffect(() => {
@@ -55,7 +59,9 @@ export default function MapaPublico() {
         setCategorias(datosCategorias.categorias || []);
         setReportes(datosReportes.reportes || []);
       } catch (err) {
-        if (activo) setError(err.message || "No se pudo cargar el mapa público");
+        if (activo) {
+          notificar(err.message || "No se pudo cargar el mapa público", "error");
+        }
       } finally {
         if (activo) setCargando(false);
       }
@@ -65,7 +71,7 @@ export default function MapaPublico() {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [notificar]);
 
   const filtrados = useMemo(
     () =>
@@ -102,11 +108,20 @@ export default function MapaPublico() {
   const actualizarFiltro = (clave, valor) =>
     setFiltros((anteriores) => ({ ...anteriores, [clave]: valor }));
 
+  const limpiarFiltros = () =>
+    setFiltros({ categoria_id: "", estado: "", buscar: "" });
+
   return (
-    <main className="publico-page">
+    <main
+      className="publico-page"
+      id="contenido-principal"
+      tabIndex={-1}
+      aria-busy={cargando}
+    >
       <header className="publico-hero">
         <div className="publico-hero-inner">
           <div className="publico-hero-copy">
+            <BotonTema className="tema-toggle-hero" />
             <p className="eyebrow">Consulta ciudadana · Los Mochis, Sinaloa</p>
             <h1>Reportes de servicios públicos en tu ciudad</h1>
             <p>
@@ -210,15 +225,13 @@ export default function MapaPublico() {
             </div>
 
             {cargando ? (
-              <div className="loading-panel">
-                <div className="spinner" />
-                <span>Cargando reportes...</span>
-              </div>
+              <SkeletonTabla filas={4} />
             ) : filtrados.length === 0 ? (
-              <div className="estado-vacio">
-                <strong>Sin reportes</strong>
-                <span>Prueba con otros filtros.</span>
-              </div>
+              <EstadoVacio
+                titulo="Sin reportes"
+                descripcion="Prueba con otros filtros para ver más resultados."
+                accion={{ etiqueta: "Ver todos los reportes", onClick: limpiarFiltros }}
+              />
             ) : (
               <div className="publico-items">
                 {filtrados.slice(0, 60).map((reporte) => (

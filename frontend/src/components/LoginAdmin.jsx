@@ -1,30 +1,31 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import BotonTema from "./BotonTema";
+import { useToast } from "./Toast";
 
 export default function LoginAdmin() {
   const { login } = useAuth();
   const [correo, setCorreo] = useState("admin@servicios.test");
   const [password, setPassword] = useState("Admin123!");
   const [mostrarPassword, setMostrarPassword] = useState(false);
-  const [error, setError] = useState("");
+  const { notificar } = useToast();
   const [cargando, setCargando] = useState(false);
 
   const manejarEnvio = async (evento) => {
     evento.preventDefault();
-    setError("");
     setCargando(true);
 
     try {
       await login(correo.trim(), password);
     } catch (err) {
-      setError(err.message || "No se pudo iniciar sesión");
+      notificar(err.message || "No se pudo iniciar sesión", "error");
     } finally {
       setCargando(false);
     }
   };
 
   return (
-    <main className="auth-page">
+    <main className="auth-page" id="contenido-principal" tabIndex={-1}>
       <section className="auth-brand">
         <div className="brand-mark brand-mark-large">SP</div>
         <p className="eyebrow">Los Mochis, Sinaloa</p>
@@ -50,8 +51,8 @@ export default function LoginAdmin() {
         </div>
 
         <div className="brand-footer">
-          <span>Fase 4</span>
-          <span>Mapa público, CSV y seguimiento</span>
+          <span>Fase 5</span>
+          <span>Interfaz consistente y accesible</span>
         </div>
       </section>
 
@@ -62,13 +63,6 @@ export default function LoginAdmin() {
           <p className="auth-form-subtitle">
             Ingresa con una cuenta con rol <strong>Administrador</strong>.
           </p>
-
-          {error && (
-            <div className="alert alert-error" role="alert">
-              <span className="alert-icon">!</span>
-              <span>{error}</span>
-            </div>
-          )}
 
           <form onSubmit={manejarEnvio} className="form">
             <label className="field">
@@ -130,9 +124,12 @@ export default function LoginAdmin() {
           </a>
         </div>
 
-        <p className="legal-note">
-          Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 4
-        </p>
+        <div className="login-footer-ux">
+          <BotonTema />
+          <p className="legal-note">
+            Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 5
+          </p>
+        </div>
       </section>
     </main>
   );

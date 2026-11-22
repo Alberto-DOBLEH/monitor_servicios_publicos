@@ -26,18 +26,16 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<_MapaPublicoState> _mapaKey = GlobalKey<_MapaPublicoState>();
 
   Future<void> _nuevoReporte() async {
-    final creado = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const NuevoReporteScreen()),
-    );
+    final creado = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const NuevoReporteScreen()));
 
     if (creado == true && mounted) {
       setState(() => _indice = 1);
       _mapaKey.currentState?.recargar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reporte enviado. Ahora aparece en “Mis reportes”.'),
-          backgroundColor: AppColors.primaryDark,
-        ),
+      mensajeExito(
+        context,
+        'Reporte enviado. Ahora aparece en “Mis reportes”.',
       );
     }
   }
@@ -131,7 +129,9 @@ class _MapaPublicoState extends State<MapaPublico> {
       final resultados = await Future.wait([
         ReporteRepository.categorias(),
         ApiService.get('/api/reportes$consulta').then((datos) {
-          final lista = datos['reportes'] is List ? datos['reportes'] as List : [];
+          final lista = datos['reportes'] is List
+              ? datos['reportes'] as List
+              : [];
           return lista
               .whereType<Map>()
               .map((r) => Reporte.fromJson(Map<String, dynamic>.from(r)))
@@ -165,7 +165,8 @@ class _MapaPublicoState extends State<MapaPublico> {
           Navigator.of(context).pop();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => ReporteDetalleScreen(idReporte: reporte.idReporte),
+              builder: (_) =>
+                  ReporteDetalleScreen(idReporte: reporte.idReporte),
             ),
           );
         },
@@ -178,7 +179,7 @@ class _MapaPublicoState extends State<MapaPublico> {
     return Stack(
       children: [
         if (_cargando)
-          const Cargando(mensaje: 'Cargando mapa de reportes...')
+          const EsqueletoMapa(mensaje: 'Cargando mapa de reportes...')
         else if (_error != null)
           AvisoError(mensaje: _error!, onReintentar: _cargar)
         else
@@ -186,13 +187,18 @@ class _MapaPublicoState extends State<MapaPublico> {
             children: [
               _construirFiltros(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     const Icon(Icons.place, size: 16, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text(
-                      '${_reportes.length} reporte(s) en el mapa',
+                      _reportes.isEmpty
+                          ? 'Aún no hay reportes publicados en el mapa.'
+                          : '${_reportes.length} reporte(s) en el mapa',
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.muted,

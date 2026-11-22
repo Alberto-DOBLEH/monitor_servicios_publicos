@@ -13,12 +13,7 @@ Future<void> main() async {
   final auth = AuthProvider();
   await auth.inicializar();
 
-  runApp(
-    ChangeNotifierProvider.value(
-      value: auth,
-      child: const MiApp(),
-    ),
-  );
+  runApp(ChangeNotifierProvider.value(value: auth, child: const MiApp()));
 }
 
 class MiApp extends StatelessWidget {

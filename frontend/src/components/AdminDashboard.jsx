@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../services/api";
 import PanelReportes from "./PanelReportes";
+import BotonTema from "./BotonTema";
+import { SkeletonTarjetas } from "./Skeleton";
+import { useToast } from "./Toast";
 
 const ESTADOS = [
   { id: "PENDIENTE", label: "Pendientes", className: "status-pending" },
@@ -25,13 +28,12 @@ export default function AdminDashboard() {
   const { usuario, token, logout } = useAuth();
   const [resumen, setResumen] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
+  const { notificar } = useToast();
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
   const [vista, setVista] = useState("resumen");
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
-    setError("");
 
     try {
       const [datosResumen, datosUsuarios] = await Promise.all([
@@ -46,7 +48,7 @@ export default function AdminDashboard() {
         logout();
         return;
       }
-      setError(err.message || "No se pudieron cargar los datos");
+      notificar(err.message || "No se pudieron cargar los datos", "error");
     } finally {
       setCargando(false);
     }
@@ -85,6 +87,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="topbar-actions">
+          <BotonTema />
           <div className="user-chip">
             <span className="user-avatar">
               {usuario?.nombre?.slice(0, 1).toUpperCase() || "A"}
@@ -100,7 +103,12 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="dashboard-content">
+      <main
+        className="dashboard-content"
+        id="contenido-principal"
+        tabIndex={-1}
+        aria-busy={cargando}
+      >
         <div className="page-heading">
           <div>
             <p className="eyebrow">Panel administrativo</p>
@@ -148,10 +156,7 @@ export default function AdminDashboard() {
 
         {vista === "resumen" &&
           (cargando && !resumen ? (
-            <div className="loading-panel">
-              <div className="spinner" />
-              <span>Cargando información...</span>
-            </div>
+            <SkeletonTarjetas />
           ) : (
           <>
             <section className="stats-grid" aria-label="Indicadores generales">
@@ -253,23 +258,24 @@ export default function AdminDashboard() {
               </div>
               <div className="phase-grid">
                 <div>
-                  <h3>Listo en Fases 1 a 3</h3>
+                  <h3>Listo en Fases 1 a 4</h3>
                   <ul>
                     <li>Usuarios, roles JWT y control de cuentas.</li>
                     <li>Catálogo de 9 servicios públicos.</li>
                     <li>Reportes geolocalizados en Los Mochis.</li>
                     <li>Evidencias e historial de estados.</li>
                     <li>App Flutter ciudadana con GPS, fotos y seguimiento.</li>
+                    <li>Mapa público, filtros de fecha y exportación CSV.</li>
                   </ul>
                 </div>
                 <div>
-                  <h3>Novedades de la Fase 4</h3>
+                  <h3>Novedades de la Fase 5</h3>
                   <ul>
-                    <li>Mapa público con descarga del APK.</li>
-                    <li>Agrupación de marcadores en el panel.</li>
-                    <li>Filtro por rango de fechas.</li>
-                    <li>Exportación de reportes a CSV.</li>
-                    <li>Pruebas de integración y despliegue.</li>
+                    <li>Paleta y componentes compartidos entre web y app.</li>
+                    <li>Avisos, skeletons y estados vacíos accesibles.</li>
+                    <li>Modo claro/oscuro y foco visible en la web.</li>
+                    <li>Confirmación antes de rechazar o archivar.</li>
+                    <li>Pruebas responsive en móvil, tablet y escritorio.</li>
                   </ul>
                 </div>
               </div>
@@ -279,7 +285,7 @@ export default function AdminDashboard() {
       </main>
 
       <footer className="dashboard-footer">
-        Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 4
+        Monitoreo de Servicios Públicos · Los Mochis, Sinaloa · Fase 5
       </footer>
     </div>
   );

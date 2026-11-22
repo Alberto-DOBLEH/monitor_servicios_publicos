@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import LoginAdmin from "./components/LoginAdmin";
 import AdminDashboard from "./components/AdminDashboard";
 import MapaPublico from "./components/MapaPublico";
+import { ToastProvider } from "./components/Toast";
 
 function usarRutaHash() {
   const [ruta, setRuta] = useState(() => window.location.hash);
@@ -39,8 +40,13 @@ function Contenido() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Contenido />
-    </AuthProvider>
+    <ToastProvider>
+      <a className="skip-link" href="#contenido-principal">
+        Saltar al contenido principal
+      </a>
+      <AuthProvider>
+        <Contenido />
+      </AuthProvider>
+    </ToastProvider>
   );
 }

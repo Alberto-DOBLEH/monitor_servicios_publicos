@@ -6,11 +6,14 @@ class AppColors {
   static const primary = Color(0xFF0F766E);
   static const primaryDark = Color(0xFF115E59);
   static const primaryLight = Color(0xFF14B8A6);
+  static const primarySoft = Color(0xFFCCFBF1);
   static const amber = Color(0xFFF59E0B);
-  static const background = Color(0xFFF4F8F7);
+  static const background = Color(0xFFF8FAFC);
   static const surface = Colors.white;
+  static const surfaceAlt = Color(0xFFF1F5F9);
   static const text = Color(0xFF0F172A);
   static const muted = Color(0xFF64748B);
+  static const hint = Color(0xFF94A3B8);
   static const border = Color(0xFFE2E8F0);
   static const danger = Color(0xFFDC2626);
   static const success = Color(0xFF16A34A);
@@ -32,9 +35,35 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Roboto',
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        },
+      ),
     );
 
     return base.copyWith(
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.primaryDark,
+        contentTextStyle: const TextStyle(color: Colors.white, fontSize: 13),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
+      ),
+      textTheme: base.textTheme
+          .apply(bodyColor: AppColors.text, displayColor: AppColors.text)
+          .copyWith(
+            bodySmall: const TextStyle(color: AppColors.muted, fontSize: 12),
+            titleMedium: const TextStyle(
+              color: AppColors.text,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
@@ -49,7 +78,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.border),
@@ -100,9 +132,7 @@ class AppTheme {
         ),
       ),
       chipTheme: base.chipTheme.copyWith(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
@@ -110,7 +140,10 @@ class AppTheme {
         unselectedItemColor: AppColors.muted,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
-        selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+        selectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
         unselectedLabelStyle: TextStyle(fontSize: 11),
       ),
     );

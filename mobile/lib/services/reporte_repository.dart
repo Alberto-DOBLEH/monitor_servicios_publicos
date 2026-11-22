@@ -45,7 +45,10 @@ class ReporteRepository {
   }
 
   static Future<List<Reporte>> misReportes(String token) async {
-    final datos = await ApiService.get('/api/reportes/mis-reportes', token: token);
+    final datos = await ApiService.get(
+      '/api/reportes/mis-reportes',
+      token: token,
+    );
     final lista = datos['reportes'] is List
         ? datos['reportes'] as List
         : <dynamic>[];

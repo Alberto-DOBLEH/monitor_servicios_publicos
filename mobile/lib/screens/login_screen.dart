@@ -60,7 +60,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.location_on_rounded, color: Colors.white, size: 38),
+                    const Icon(
+                      Icons.location_on_rounded,
+                      color: Colors.white,
+                      size: 38,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       AppConfig.appName,
@@ -78,7 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 14),
                     const Row(
                       children: [
-                        Icon(Icons.verified_user_outlined, color: Colors.white70, size: 15),
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: Colors.white70,
+                          size: 15,
+                        ),
                         SizedBox(width: 5),
                         Text(
                           'Solo Los Mochis, Sinaloa',
@@ -163,8 +171,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline,
-                                  color: AppColors.danger, size: 18),
+                              const Icon(
+                                Icons.error_outline,
+                                color: AppColors.danger,
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -206,9 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const RegistroScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const RegistroScreen()),
                     ),
                     child: const Text('Regístrate'),
                   ),

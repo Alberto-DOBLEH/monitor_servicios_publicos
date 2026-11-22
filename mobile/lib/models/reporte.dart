@@ -104,8 +104,9 @@ class Reporte {
   static int _entero(dynamic valor) =>
       valor is int ? valor : int.tryParse(valor?.toString() ?? '') ?? 0;
 
-  static double _numero(dynamic valor) =>
-      valor is num ? valor.toDouble() : double.tryParse(valor?.toString() ?? '') ?? 0;
+  static double _numero(dynamic valor) => valor is num
+      ? valor.toDouble()
+      : double.tryParse(valor?.toString() ?? '') ?? 0;
 
   static DateTime? _fecha(dynamic valor) {
     if (valor == null) return null;

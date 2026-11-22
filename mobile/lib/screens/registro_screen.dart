@@ -61,8 +61,11 @@ class _RegistroScreenState extends State<RegistroScreen> {
               ? Column(
                   children: [
                     const SizedBox(height: 50),
-                    const Icon(Icons.check_circle_outline,
-                        size: 80, color: AppColors.success),
+                    const Icon(
+                      Icons.check_circle_outline,
+                      size: 80,
+                      color: AppColors.success,
+                    ),
                     const SizedBox(height: 20),
                     const Text(
                       '¡Registro exitoso!',
@@ -113,7 +116,8 @@ class _RegistroScreenState extends State<RegistroScreen> {
                           labelText: 'Nombre completo',
                           prefixIcon: Icon(Icons.person_outline),
                         ),
-                        validator: (valor) => valor == null || valor.trim().length < 3
+                        validator: (valor) =>
+                            valor == null || valor.trim().length < 3
                             ? 'Ingresa tu nombre'
                             : null,
                       ),
@@ -125,7 +129,8 @@ class _RegistroScreenState extends State<RegistroScreen> {
                           labelText: 'Correo electrónico',
                           prefixIcon: Icon(Icons.email_outlined),
                         ),
-                        validator: (valor) => valor == null || !valor.contains('@')
+                        validator: (valor) =>
+                            valor == null || !valor.contains('@')
                             ? 'Correo no válido'
                             : null,
                       ),

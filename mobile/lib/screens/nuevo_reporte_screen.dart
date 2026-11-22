@@ -110,10 +110,7 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
         ),
       );
 
-      if (!AppConfig.dentroDeLosMochis(
-        posicion.latitude,
-        posicion.longitude,
-      )) {
+      if (!AppConfig.dentroDeLosMochis(posicion.latitude, posicion.longitude)) {
         throw AppConfig.mensajeFueraDeArea();
       }
 
@@ -154,7 +151,8 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
 
     for (final foto in nuevas.take(disponibles)) {
       final extension = foto.path.toLowerCase();
-      final formatoValido = extension.endsWith('.jpg') ||
+      final formatoValido =
+          extension.endsWith('.jpg') ||
           extension.endsWith('.jpeg') ||
           extension.endsWith('.png') ||
           extension.endsWith('.webp');
@@ -175,14 +173,14 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
     setState(() => _fotos.addAll(aceptadas));
 
     if (rechazadas.isNotEmpty) {
-      _aviso('Se omitieron ${rechazadas.length} imagen(es): ${rechazadas.join(", ")}.');
+      _aviso(
+        'Se omitieron ${rechazadas.length} imagen(es): ${rechazadas.join(", ")}.',
+      );
     }
   }
 
   void _aviso(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje), backgroundColor: AppColors.primaryDark),
-    );
+    mensajeError(context, mensaje);
   }
 
   bool _validarPaso() {
@@ -332,7 +330,10 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
     }
 
     if (_errorCategorias != null) {
-      return AvisoError(mensaje: _errorCategorias!, onReintentar: _cargarCategorias);
+      return AvisoError(
+        mensaje: _errorCategorias!,
+        onReintentar: _cargarCategorias,
+      );
     }
 
     return Column(
@@ -371,7 +372,12 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                     width: seleccionada ? 2 : 1,
                   ),
                   boxShadow: seleccionada
-                      ? [BoxShadow(color: color.withValues(alpha: 0.18), blurRadius: 12)]
+                      ? [
+                          BoxShadow(
+                            color: color.withValues(alpha: 0.18),
+                            blurRadius: 12,
+                          ),
+                        ]
                       : null,
                 ),
                 child: Column(
@@ -500,7 +506,9 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
             children: [
               Icon(
                 _ubicacionDetectada ? Icons.gps_fixed : Icons.gps_off,
-                color: _ubicacionDetectada ? AppColors.success : AppColors.amber,
+                color: _ubicacionDetectada
+                    ? AppColors.success
+                    : AppColors.amber,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -614,8 +622,7 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                       top: 2,
                       right: 2,
                       child: GestureDetector(
-                        onTap: () =>
-                            setState(() => _fotos.removeAt(indice)),
+                        onTap: () => setState(() => _fotos.removeAt(indice)),
                         child: Container(
                           padding: const EdgeInsets.all(3),
                           decoration: const BoxDecoration(
@@ -717,8 +724,8 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
                 _dato(
                   'Fecha',
                   '${fecha.day}/${fecha.month}/${fecha.year} '
-                  '${fecha.hour.toString().padLeft(2, '0')}:'
-                  '${fecha.minute.toString().padLeft(2, '0')}',
+                      '${fecha.hour.toString().padLeft(2, '0')}:'
+                      '${fecha.minute.toString().padLeft(2, '0')}',
                 ),
               ],
             ),
@@ -735,8 +742,11 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.visibility_outlined,
-                  color: AppColors.primary, size: 18),
+              Icon(
+                Icons.visibility_outlined,
+                color: AppColors.primary,
+                size: 18,
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -817,8 +827,8 @@ class _NuevoReporteScreenState extends State<NuevoReporteScreen> {
               onPressed: _enviando
                   ? null
                   : _paso == 3
-                      ? _enviar
-                      : _siguiente,
+                  ? _enviar
+                  : _siguiente,
               child: _enviando
                   ? const SizedBox(
                       height: 20,

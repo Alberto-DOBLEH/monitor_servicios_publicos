@@ -21,40 +21,51 @@ class ApiService {
   static final http.Client _cliente = http.Client();
 
   static Map<String, String> _headers(String? token) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
-  static Future<dynamic> get(String ruta, {String? token}) =>
-      _ejecutar(() => _cliente.get(Uri.parse(AppConfig.url(ruta)), headers: _headers(token)));
+  static Future<dynamic> get(String ruta, {String? token}) => _ejecutar(
+    () =>
+        _cliente.get(Uri.parse(AppConfig.url(ruta)), headers: _headers(token)),
+  );
 
-  static Future<dynamic> post(String ruta, Map<String, dynamic> cuerpo, {String? token}) =>
-      _ejecutar(
-        () => _cliente.post(
-          Uri.parse(AppConfig.url(ruta)),
-          headers: _headers(token),
-          body: jsonEncode(cuerpo),
-        ),
-      );
+  static Future<dynamic> post(
+    String ruta,
+    Map<String, dynamic> cuerpo, {
+    String? token,
+  }) => _ejecutar(
+    () => _cliente.post(
+      Uri.parse(AppConfig.url(ruta)),
+      headers: _headers(token),
+      body: jsonEncode(cuerpo),
+    ),
+  );
 
-  static Future<dynamic> put(String ruta, Map<String, dynamic> cuerpo, {String? token}) =>
-      _ejecutar(
-        () => _cliente.put(
-          Uri.parse(AppConfig.url(ruta)),
-          headers: _headers(token),
-          body: jsonEncode(cuerpo),
-        ),
-      );
+  static Future<dynamic> put(
+    String ruta,
+    Map<String, dynamic> cuerpo, {
+    String? token,
+  }) => _ejecutar(
+    () => _cliente.put(
+      Uri.parse(AppConfig.url(ruta)),
+      headers: _headers(token),
+      body: jsonEncode(cuerpo),
+    ),
+  );
 
-  static Future<dynamic> patch(String ruta, Map<String, dynamic> cuerpo, {String? token}) =>
-      _ejecutar(
-        () => _cliente.patch(
-          Uri.parse(AppConfig.url(ruta)),
-          headers: _headers(token),
-          body: jsonEncode(cuerpo),
-        ),
-      );
+  static Future<dynamic> patch(
+    String ruta,
+    Map<String, dynamic> cuerpo, {
+    String? token,
+  }) => _ejecutar(
+    () => _cliente.patch(
+      Uri.parse(AppConfig.url(ruta)),
+      headers: _headers(token),
+      body: jsonEncode(cuerpo),
+    ),
+  );
 
   /// Alta de reporte con evidencias fotográficas.
   static Future<dynamic> postMultipart(
@@ -93,7 +104,9 @@ class ApiService {
     }
   }
 
-  static Future<dynamic> _ejecutar(Future<http.Response> Function() accion) async {
+  static Future<dynamic> _ejecutar(
+    Future<http.Response> Function() accion,
+  ) async {
     try {
       final respuesta = await accion();
       return _procesar(respuesta);
@@ -130,12 +143,11 @@ class ApiService {
     }
 
     final mensaje = datos is Map
-        ? (datos['error'] ?? datos['mensaje'] ?? 'No se pudo completar la solicitud')
+        ? (datos['error'] ??
+              datos['mensaje'] ??
+              'No se pudo completar la solicitud')
         : 'No se pudo completar la solicitud (${respuesta.statusCode})';
 
-    throw ApiException(
-      mensaje.toString(),
-      statusCode: respuesta.statusCode,
-    );
+    throw ApiException(mensaje.toString(), statusCode: respuesta.statusCode);
   }
 }

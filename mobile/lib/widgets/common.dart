@@ -43,10 +43,14 @@ class AvisoError extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: AppColors.danger.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline, color: AppColors.danger, size: 28),
+              child: const Icon(
+                Icons.error_outline,
+                color: AppColors.danger,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 14),
             Text(
@@ -77,18 +81,23 @@ class EstadoBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _color(estado);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        Reporte.estadoLabels[estado] ?? estado,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+    final etiqueta = Reporte.estadoLabels[estado] ?? estado;
+
+    return Semantics(
+      label: 'Estado: $etiqueta',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          etiqueta,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -146,4 +155,139 @@ class SeccionTitulo extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Avisos breves y coherentes con la paleta de la web.
+void mensajeExito(BuildContext context, String texto) {
+  _mensaje(context, texto, AppColors.primaryDark);
+}
+
+void mensajeError(BuildContext context, String texto) {
+  _mensaje(context, texto, AppColors.danger);
+}
+
+void _mensaje(BuildContext context, String texto, Color color) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) return;
+
+  messenger.hideCurrentSnackBar();
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(texto),
+      backgroundColor: color,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      duration: const Duration(seconds: 4),
+    ),
+  );
+}
+
+/// Estado vacío reutilizable, con acción opcional.
+class EstadoVacio extends StatelessWidget {
+  final String titulo;
+  final String descripcion;
+  final IconData icono;
+  final String? etiquetaAccion;
+  final VoidCallback? onAccion;
+  final bool compacto;
+
+  const EstadoVacio({
+    super.key,
+    required this.titulo,
+    required this.descripcion,
+    this.icono = Icons.inbox_outlined,
+    this.etiquetaAccion,
+    this.onAccion,
+    this.compacto = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: '$titulo. $descripcion',
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(compacto ? 16 : 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icono, size: compacto ? 34 : 56, color: AppColors.border),
+              SizedBox(height: compacto ? 10 : 16),
+              Text(
+                titulo,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: compacto ? 14 : 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.text,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                descripcion,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.muted, fontSize: 13),
+              ),
+              if (onAccion != null) ...[
+                const SizedBox(height: 18),
+                OutlinedButton.icon(
+                  onPressed: onAccion,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(etiquetaAccion ?? 'Reintentar'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Esqueletos de carga: comunican progreso sin pantallas vacías.
+class EsqueletoLista extends StatelessWidget {
+  final String mensaje;
+
+  const EsqueletoLista({super.key, this.mensaje = 'Cargando...'});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: mensaje,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: AppColors.primary),
+              const SizedBox(height: 16),
+              Text(
+                mensaje,
+                style: const TextStyle(color: AppColors.muted, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class EsqueletoDetalle extends StatelessWidget {
+  final String mensaje;
+
+  const EsqueletoDetalle({super.key, this.mensaje = 'Cargando detalle...'});
+
+  @override
+  Widget build(BuildContext context) => EsqueletoLista(mensaje: mensaje);
+}
+
+class EsqueletoMapa extends StatelessWidget {
+  final String mensaje;
+
+  const EsqueletoMapa({super.key, this.mensaje = 'Cargando mapa...'});
+
+  @override
+  Widget build(BuildContext context) => EsqueletoLista(mensaje: mensaje);
 }
