@@ -103,24 +103,27 @@ class _MisReportesScreenState extends State<MisReportesScreen> {
                       itemBuilder: (context, indice) {
                         final filtro = _filtros[indice];
                         final activo = filtro['valor'] == _filtro;
-                        return ChoiceChip(
-                          label: Text(filtro['label']!),
-                          selected: activo,
-                          showCheckmark: false,
-                          selectedColor: AppColors.primary,
-                          backgroundColor: Colors.white,
-                          side: BorderSide(
-                            color: activo
-                                ? AppColors.primary
-                                : AppColors.border,
+                        return Material(
+                          color: Colors.transparent,
+                          child: ChoiceChip(
+                            label: Text(filtro['label']!),
+                            selected: activo,
+                            showCheckmark: false,
+                            selectedColor: AppColors.primary,
+                            backgroundColor: Colors.white,
+                            side: BorderSide(
+                              color: activo
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                            ),
+                            labelStyle: TextStyle(
+                              color: activo ? Colors.white : AppColors.muted,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            onSelected: (_) =>
+                                setState(() => _filtro = filtro['valor']!),
                           ),
-                          labelStyle: TextStyle(
-                            color: activo ? Colors.white : AppColors.muted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          onSelected: (_) =>
-                              setState(() => _filtro = filtro['valor']!),
                         );
                       },
                     ),

@@ -1,204 +1,105 @@
 # Monitoreo de Servicios Públicos — Los Mochis, Sinaloa
 
-Sistema de reporte ciudadano y seguimiento administrativo de servicios públicos.
+Sistema de **reporte ciudadano** y **seguimiento administrativo** de servicios públicos.
+Los ciudadanos reportan desde la app Flutter (Android); los administradores gestionan y
+visualizan los reportes en la web React. Todo el proyecto usa **datos de prueba**.
 
-- **Móvil ciudadano:** Flutter (Android, APK) — construida en la Fase 3.
-- **Web administrador:** React + Vite + Leaflet.
-- **API:** Node.js + Express.
-- **Base de datos:** MySQL / MariaDB (compatible con TiDB).
+## Índice — lectura rápida
 
-## Estado actual: Fase 5 completada
+| Sección | Contenido |
+|---|---|
+| [Documentación por módulo](#documentación-por-módulo) | Enlaces directos a los README de `backend/`, `frontend/` y `mobile/` |
+| [Arquitectura](#arquitectura) | Componentes, puertos y flujo de datos |
+| [Requisitos](#requisitos) | Versiones y herramientas necesarias |
+| [Arranque rápido](#arranque-rápido) | Orden exacto para levantar todo en local |
+| [Credenciales de prueba](#credenciales-de-prueba) | Usuarios `ADMIN` y `CIUDADANO` |
+| [Verificación](#verificación) | Comandos y resultados esperados |
+| [Endpoints](#endpoints) | API pública, autenticada y solo administrador |
+| [Ciclo de vida de un reporte](#ciclo-de-vida-de-un-reporte) | Transiciones de estado permitidas |
+| [APK ciudadano](#apk-ciudadano) | Cómo generarlo y dónde colocarlo |
+| [Estado del proyecto](#estado-del-proyecto) | Fases completadas y trabajo opcional |
 
-Fase 1:
+## Documentación por módulo
 
-- Esquema de base de datos con datos de prueba.
-- Registro público de ciudadanos y login para `ADMIN` y `CIUDADANO`.
-- JWT, bcrypt, rate limiting, Helmet y CORS.
-- Middleware de autorización por rol y control de usuarios.
-- Panel web con login exclusivo de administrador.
+Cada carpeta tiene su propio README con propósito, stack, dependencias, instalación,
+variables de entorno, comandos, pruebas, estructura y solución de problemas:
 
-Fase 2:
+| Módulo | README | Resumen |
+|---|---|---|
+| `backend/` | [backend/README.md](backend/README.md) | API Node/Express, MariaDB, JWT, roles, evidencias y CSV |
+| `frontend/` | [frontend/README.md](frontend/README.md) | Web React admin + mapa público Leaflet, tema claro/oscuro |
+| `mobile/` | [mobile/README.md](mobile/README.md) | App Flutter ciudadana, GPS, fotos, APK release |
 
-- Catálogo de 9 categorías de servicios públicos.
-- Alta de reportes con GPS automático validado contra Los Mochis.
-- Evidencias fotográficas (JPEG/PNG/WebP, máximo 3 de 5 MB).
-- “Mis reportes” con aislamiento estricto por ciudadano.
-- Detalle con fotos, coordenadas y timeline de estados.
-- Cambio de estado administrado con transiciones permitidas e historial.
-- Mapa Leaflet con puntos exactos y filtros en el panel.
-- Estadísticas por estado, categoría, prioridad y sector.
-
-Fase 3:
-
-- App Flutter ciudadana con tema teal/ámbar consistente con la web.
-- Login, registro, perfil y cierre de sesión; token seguro en el dispositivo.
-- Mapa público de `flutter_map` limitado a Los Mochis con filtro por categoría.
-- Wizard de 4 pasos con GPS automático, ajuste manual del punto y hasta 3 fotos.
-- “Mis reportes”, detalle con evidencias, coordenadas e historial de estados.
-- APK release generado y `flutter analyze` / `flutter test` en verde.
-
-Fase 4:
-
-- Mapa público accesible sin sesión en `#/mapa-publico`, con métricas y lista de reportes.
-- CTA de descarga del APK; el binario se genera en local y se coloca en `backend/downloads/` (no versionado).
-- Clustering opcional de marcadores con `react-leaflet-cluster`.
-- Filtro por rango de fechas en el panel administrativo.
-- Exportación CSV con los filtros activos (solo `ADMIN`, BOM para Excel).
-- Suite de integración ampliada y smoke tests de extremo a extremo.
-
-Fase 5:
-
-- Paleta, espaciados y microcopy alineados entre React y Flutter.
-- Toasts accesibles, skeletons y estados vacíos con acción en ambos clientes.
-- Modo claro/oscuro en la web, foco visible y navegación por teclado.
-- Confirmación antes de rechazar o archivar un reporte.
-- Pruebas de componentes UX y verificación responsive en móvil, tablet y escritorio.
-
-## Estructura
+## Arquitectura
 
 ```text
-monitor_servicios_publicos/
-├── BD.sql                       # Esquema + datos de prueba
-├── docker-compose.yml           # MariaDB local en el puerto 3307
-├── backend/
-│   ├── src/
-│   │   ├── config/              # DB, entorno y almacenamiento de fotos
-│   │   ├── constants/           # Los Mochis, estados y transiciones
-│   │   ├── controllers/         # auth, admin, categorías, reportes
-│   │   ├── middleware/          # JWT, roles, rate limit, errores
-│   │   ├── routes/              # /api/auth, /api/admin, /api/reportes...
-│   │   └── uploads/             # Evidencias locales (ignorado por git)
-│   ├── downloads/               # APK servido al mapa público (generado en local, ignorado)
-│   ├── tests/                   # Suite de integración (133 pruebas)
-│   └── setup_db.js              # Carga BD.sql
-├── frontend/
-│   └── src/components/          # Login, dashboard, mapa, reportes, mapa público
-└── mobile/
-    ├── lib/
-    │   ├── config/              # URL de API y límites geográficos
-    │   ├── models/              # Usuario, categoría, reporte e historial
-    │   ├── providers/           # Sesión con Provider
-    │   ├── screens/             # Splash, login, registro, mapa, wizard, etc.
-    │   ├── services/            # ApiService y repositorios
-    │   ├── theme/               # Paleta y tema Material 3
-    │   └── widgets/             # Mapa y componentes compartidos
-    └── build/app/outputs/flutter-apk/app-release.apk   # APK generado en local (ignorado)
+ App Flutter (CIUDADANO) ──┐
+                           ├──► API Express :3000 ──► MariaDB :3307
+ Web React (ADMIN) ────────┘          │
+   + mapa público sin sesión          └──► /uploads/reportes (evidencias)
+                                          /downloads/*.apk (binario local)
 ```
+
+| Componente | Tecnología | Rol |
+|---|---|---|
+| `mobile/` | Flutter 3 / Dart | Alta de reportes, GPS, fotos, “mis reportes”, perfil |
+| `frontend/` | React 19 + Vite 8 + Leaflet | Panel exclusivo de `ADMIN` y mapa público sin sesión |
+| `backend/` | Node.js + Express 5 | Autenticación JWT, roles, reportes, estados, CSV |
+| `BD.sql` | MariaDB 11 | Esquema y datos de prueba |
+| `docker-compose.yml` | MariaDB en `3307` | Base de datos local |
+
+> La web **solo permite `ADMIN`**. Los ciudadanos **solo existen en la app móvil** y
+> únicamente pueden ver y monitorizar **sus propios reportes**.
 
 ## Requisitos
 
-- Node.js 20+
-- Podman o Docker (para la base de datos local)
-- Flutter 3.x (solo si se quiere recompilar la app)
+- Node.js **20+** y npm.
+- Podman o Docker (para el contenedor de MariaDB).
+- Flutter **3.x** (Dart SDK `^3.13.2`) solo si se recompila la app.
 
-## Puesta en marcha
-
-### 1. Base de datos
+## Arranque rápido
 
 ```bash
-cd monitor_servicios_publicos
-podman compose up -d
-# o: docker compose up -d
-```
+# 1) Base de datos (127.0.0.1:3307, root/root)
+podman compose up -d        # o: docker compose up -d
 
-La base queda expuesta en `127.0.0.1:3307` con usuario `root` y contraseña `root`.
-
-### 2. Backend
-
-```bash
+# 2) API
 cd backend
-cp .env.example .env      # solo la primera vez
+cp .env.example .env        # solo la primera vez
 npm install
-npm run db:setup          # crea la base y carga los datos de prueba
-npm run dev               # http://localhost:3000
-```
+npm run db:setup            # crea la base y carga datos de prueba
+npm run dev                 # http://localhost:3000
 
-### 3. Panel administrativo
-
-```bash
+# 3) Web administrativa (en otra terminal)
 cd frontend
 npm install
-npm run dev               # http://localhost:5173
-```
+npm run dev                 # http://localhost:5173
 
-El panel tiene dos pestañas:
-
-- **Resumen:** usuarios, estados y avance del proyecto.
-- **Reportes:** tabla filtrable (estado, servicio, texto y rango de fechas), mapa con
-  clustering opcional, exportación CSV, detalle, fotos, historial y cambio de estado.
-
-El enlace **Ver mapa público de reportes** del login abre `#/mapa-publico`: una vista
-sin autenticación con el mapa de Los Mochis, métricas, filtros y la descarga del APK.
-
-### 4. App ciudadana (Flutter / Android)
-
-El APK **no se versiona**: se genera en local antes de enviarlo a revisión.
-
-```bash
+# 4) App ciudadana (opcional, en otra terminal)
 cd mobile
 flutter pub get
-flutter build apk --release
+flutter run                 # o: flutter build apk --release
 ```
 
-Salida: `mobile/build/app/outputs/flutter-apk/app-release.apk`.
-
-Para conectarlo a un backend distinto al emulador (`10.0.2.2:3000`):
-
-```bash
-flutter build apk --release \
-  --dart-define=API_BASE_URL=http://192.168.1.10:3000
-```
-
-En un dispositivo físico usa la IP de tu máquina en la red local.
-El dispositivo necesita permisos de ubicación y, si usas la cámara, permiso de cámara.
-
-Comandos de calidad:
-
-```bash
-flutter analyze            # 0 issues
-flutter test               # 1/1
-```
+Usa **`localhost:5173`**, no `127.0.0.1:5173`: el backend solo permite ese origen CORS.
 
 ## Credenciales de prueba
 
 | Rol | Correo | Contraseña |
 |---|---|---|
-| ADMIN | `admin@servicios.test` | `Admin123!` |
-| CIUDADANO | `ciudadano1@servicios.test` | `Ciudadano123!` |
-| CIUDADANO | `ciudadano2@servicios.test` | `Ciudadano123!` |
+| `ADMIN` | `admin@servicios.test` | `Admin123!` |
+| `CIUDADANO` | `ciudadano1@servicios.test` | `Ciudadano123!` |
+| `CIUDADANO` | `ciudadano2@servicios.test` | `Ciudadano123!` |
 
-La web solo permite el rol `ADMIN`. Las cuentas `CIUDADANO` son las que se usan en la app Flutter.
+## Verificación
 
-## Pruebas
-
-```bash
-cd backend
-npm test
-```
-
-El runner es autocontenido: reinicia la base de prueba, levanta un backend aislado en el
-puerto `3100` con `NODE_ENV=test`, ejecuta las suites y lo detiene al finalizar.
-
-Resultado esperado: **133 pruebas, 0 fallos**.
-
-Cobertura:
-
-- **Fase 1:** login, roles, registro, perfil, contraseña, activación de usuarios y alcance geográfico.
-- **Fase 2:** categorías, validación de coordenadas, alta con/sin fotos, límites de archivos,
-  URLs de evidencias, mapa público, aislamiento de “mis reportes”, permisos de detalle,
-  transiciones de estado, rechazos con motivo, historial, listado admin y estadísticas.
-- **Fase 4:** autorización y filtros del CSV, BOM/UTF-8, fechas legibles y formato de descarga.
-
-App Flutter:
-
-```bash
-cd mobile
-flutter analyze
-flutter test
-flutter build apk --release
-```
-
-Resultado esperado: **0 issues**, **1/1 test** y APK en `build/app/outputs/flutter-apk/app-release.apk`.
+| Comando | Resultado esperado |
+|---|---|
+| `cd backend && npm test` | **133/133** pruebas (reinicia la BD de prueba) |
+| `cd frontend && npm test` | **6/6** pruebas (UX y regresión de rechazo) |
+| `cd frontend && npm run build` | Compilación correcta |
+| `cd mobile && flutter analyze` | **0 issues** |
+| `cd mobile && flutter test` | **5/5** pruebas (incluye layout responsive) |
 
 ## Endpoints
 
@@ -208,7 +109,7 @@ Resultado esperado: **0 issues**, **1/1 test** y APK en `build/app/outputs/flutt
 |---|---|---|
 | GET | `/health` | Estado de la API y la DB |
 | GET | `/api/geo` | Centro, zoom y límites de Los Mochis |
-| GET | `/api/categorias` | Catálogo de servicios públicos |
+| GET | `/api/categorias` | Catálogo de 9 servicios públicos |
 | GET | `/api/reportes` | Puntos activos para el mapa |
 | GET | `/downloads/monitoreo-servicios.apk` | APK ciudadano (rango HTTP soportado) |
 
@@ -249,16 +150,16 @@ PENDIENTE ──→ EN_PROCESO ──→ COMPLETADO ──→ ARCHIVADO
 
 - Todo cambio se registra en `Reporte_Historial`.
 - `COMPLETADO` y `RECHAZADO` establecen `fecha_cierre`.
-- `RECHAZADO` exige un motivo y lo guarda en `motivo_rechazo`.
-- Un ciudadano nunca puede cambiar estados.
+- `RECHAZADO` exige un motivo (`motivo_rechazo`).
+- Un ciudadano **nunca** puede cambiar estados.
 
 ## Evidencias fotográficas
 
 - Almacenamiento local en `backend/uploads/reportes/` durante desarrollo.
 - Se sirven en `/uploads/reportes/<archivo>` con URL absoluta según `BACKEND_URL`.
-- Máximo 3 imágenes, 5 MB cada una, formatos JPEG, PNG y WebP.
+- Máximo 3 imágenes, 5 MB cada una, formatos JPEG/PNG/WebP.
 - Nombres aleatorios (UUID); nunca se usa el nombre original.
-- La función `guardarEvidencias` está aislada para sustituirla por Cloudinary en producción.
+- `guardarEvidencias` está aislada para sustituirla por Cloudinary en producción.
 
 ## Alcance geográfico
 
@@ -266,56 +167,39 @@ PENDIENTE ──→ EN_PROCESO ──→ COMPLETADO ──→ ARCHIVADO
 |---|---|
 | Centro | `25.7904, -108.9858` |
 | Zoom inicial | `13` |
-| Latitud mínima | `25.70` |
-| Latitud máxima | `25.88` |
-| Longitud mínima | `-109.06` |
-| Longitud máxima | `-108.91` |
+| Latitud | `25.70` a `25.88` |
+| Longitud | `-109.06` a `-108.91` |
 
-Definidos en `backend/src/constants/geo.js` y expuestos en `GET /api/geo`.
-El backend rechaza con `400` cualquier reporte fuera de estos límites.
-La app Flutter usa las mismas constantes en `mobile/lib/config/app_config.dart` para
-validar el GPS y restringir el mapa.
+Definido en `backend/src/constants/geo.js` y `mobile/lib/config/app_config.dart`.
+El backend rechaza con `400` cualquier reporte fuera de este rectángulo.
 
-## Estado final
+## APK ciudadano
 
-Fases 1 a 5 completadas. Queda como mejora opcional la Fase 6 del plan:
-
-- Cloudinary en producción en lugar del almacenamiento local.
-- Despliegue cloud de web, API y base de datos.
-- Pruebas en dispositivo real y distribución del APK.
-- Notificaciones push y panel de analistas (fuera del alcance actual).
-
-### Verificación de la Fase 4
-
-| Comando / prueba | Resultado |
-|---|---|
-| `cd backend && npm test` | **133/133** |
-| `cd frontend && npm run build` | ✅ (CSS 41.98 kB, JS 443.97 kB) |
-| Smoke test login → panel → reportes | 19 filas, sin errores de consola |
-| Smoke test mapa público | 16 reportes, 7 clusters, filtro y CTA del APK |
-| Exportación CSV con token admin | 200, `text/csv`, BOM y fechas `dd/mm/aaaa` |
-| Descarga del APK (tras copiarlo en local) | 206 (rango), `application/vnd.android.package-archive` |
-| `cd mobile && flutter analyze && flutter test` | 0 issues, 1/1 |
-
-### Verificación de la Fase 5
-
-| Comando / prueba | Resultado |
-|---|---|
-| `cd frontend && npm test` | ✅ 4 pruebas de UX (`Toast`, skeletons, estado vacío, tema) |
-| `cd frontend && npm run build` | ✅ compilación sin errores |
-| `cd mobile && flutter analyze` | Sin issues |
-| `cd mobile && flutter test` | ✅ 4/4 (paleta, widgets y splash) |
-| Revisión responsive | Móvil, tablet y escritorio sin desbordes |
-| Accesibilidad | Foco visible, `aria-*`, `role="status"`, `prefers-reduced-motion` |
-
-Para publicar el APK en el mapa público, genéralo en local y cópialo:
+El binario **no se versiona**. Se genera en local y se envía por separado a revisión:
 
 ```bash
 cd mobile
+flutter pub get
 flutter build apk --release
 cd ..
 cp mobile/build/app/outputs/flutter-apk/app-release.apk \
    backend/downloads/monitoreo-servicios.apk
 ```
 
-`backend/downloads/*.apk` está en `.gitignore`: el binario se envía por separado a revisión.
+Salida: `mobile/build/app/outputs/flutter-apk/app-release.apk`.
+`backend/downloads/*.apk` está en `.gitignore`.
+
+Para apuntar a otro backend:
+
+```bash
+flutter build apk --release \
+  --dart-define=API_BASE_URL=http://192.168.1.10:3000
+```
+
+## Estado del proyecto
+
+Fases **1 a 5 completadas**: base de datos y autenticación, reportes y mapa,
+app Flutter, mapa público/CSV y consistencia visual + accesibilidad.
+
+Mejoras opcionales pendientes (Fase 6 del plan maestro): Cloudinary en producción,
+despliegue cloud, pruebas en dispositivo real/distribución del APK y notificaciones push.

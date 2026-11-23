@@ -88,9 +88,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           size: 15,
                         ),
                         SizedBox(width: 5),
-                        Text(
-                          'Solo Los Mochis, Sinaloa',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        Flexible(
+                          child: Text(
+                            'Solo Los Mochis, Sinaloa',
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
                         ),
                       ],
                     ),
@@ -211,9 +213,14 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '¿Aún no tienes cuenta? ',
-                    style: TextStyle(color: AppColors.muted, fontSize: 13),
+                  Flexible(
+                    child: Text(
+                      '¿Aún no tienes cuenta?',
+                      style: const TextStyle(
+                        color: AppColors.muted,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).push(

@@ -144,12 +144,14 @@ class SeccionTitulo extends StatelessWidget {
           child: Icon(icono, color: color, size: 18),
         ),
         const SizedBox(width: 10),
-        Text(
-          titulo,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: AppColors.text,
+        Expanded(
+          child: Text(
+            titulo,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text,
+            ),
           ),
         ),
       ],

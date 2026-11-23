@@ -14,10 +14,21 @@ const SIMBOLOS_ESTADO = {
   ARCHIVADO: "–",
 };
 
+const colorSimbolo = (color) => {
+  const hex = (color || "#0f766e").replace("#", "");
+  const completo = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+  const rgb = [0, 2, 4].map((i) => parseInt(completo.slice(i, i + 2), 16) / 255);
+  const [r, g, b] = rgb.map((c) =>
+    c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
+  );
+  const luminancia = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminancia > 0.18 ? "#0f172a" : "#ffffff";
+};
+
 const crearIcono = (color, estado, seleccionado) =>
   L.divIcon({
     className: "marker-leaflet",
-    html: `<div class="marker-punto${seleccionado ? " marker-seleccionado" : ""}" style="--marker-color:${color || "#0f766e"}">
+    html: `<div class="marker-punto${seleccionado ? " marker-seleccionado" : ""}" style="--marker-color:${color || "#0f766e"}; --marker-texto:${colorSimbolo(color)}">
              <span>${SIMBOLOS_ESTADO[estado] || "•"}</span>
            </div>`,
     iconSize: [32, 32],

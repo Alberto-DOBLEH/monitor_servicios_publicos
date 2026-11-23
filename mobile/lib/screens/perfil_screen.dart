@@ -119,7 +119,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           child: Row(
             children: [
               CircleAvatar(
-                radius: 32,
+                radius: MediaQuery.sizeOf(context).width < 380 ? 24 : 32,
                 backgroundColor: Colors.white.withValues(alpha: 0.2),
                 child: Text(
                   usuario?.nombre.isNotEmpty == true
@@ -158,9 +158,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       children: [
                         Icon(Icons.verified, color: Colors.white, size: 14),
                         SizedBox(width: 4),
-                        Text(
-                          'Cuenta ciudadana activa',
-                          style: TextStyle(color: Colors.white, fontSize: 11),
+                        Flexible(
+                          child: Text(
+                            'Cuenta ciudadana activa',
+                            style: TextStyle(color: Colors.white, fontSize: 11),
+                          ),
                         ),
                       ],
                     ),
